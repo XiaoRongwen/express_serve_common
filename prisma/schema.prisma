@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  avatar    String?   @db.VarChar(500)
+  isActive  Boolean   @default(true) @map("is_active")
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // 关联关系
+  files     File[]
+
+  @@map("users")
+  @@index([email])
+  @@index([isActive])
+}
+
+// 文件模型
+model File {
+  id           Int      @id @default(autoincrement())
+  originalName String   @db.VarChar(255) @map("original_name")
+  filename     String   @unique @db.VarChar(255)
+  mimetype     String   @db.VarChar(100)
+  size         Int
+  path         String   @db.VarChar(500)
+  userId       Int      @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+  @@index([userId])
+  @@index([filename])
+}
+
